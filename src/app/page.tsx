@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
 import Link from "next/link";
 
 import {
@@ -9,10 +8,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import { Room } from "@/db/schema";
-import { GithubIcon } from "lucide-react";
 import { getRooms } from "@/services/rooms";
+import { GithubIcon } from "lucide-react";
+import { TagsList } from "@/components/tags-list";
 
 
 function RoomCard({ room }: { room: Room }) {
@@ -22,7 +22,8 @@ function RoomCard({ room }: { room: Room }) {
         <CardTitle>{room.name}</CardTitle>
         <CardDescription>{room.description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
+        <TagsList tags={room.tags} />
         {room.githubRepo &&
           <Link
             href={room.githubRepo}
@@ -31,7 +32,9 @@ function RoomCard({ room }: { room: Room }) {
             rel="noopener noreferrer"
           >
             <GithubIcon />
-            Github Repo</Link>}
+            Github Repo
+          </Link>
+        }
       </CardContent>
       <CardFooter>
         <Button asChild>
@@ -39,7 +42,6 @@ function RoomCard({ room }: { room: Room }) {
         </Button>
       </CardFooter>
     </Card>
-
   )
 }
 

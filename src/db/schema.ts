@@ -4,7 +4,7 @@ import {
   text,
   primaryKey,
   integer,
-  uuid
+  uuid,
 } from "drizzle-orm/pg-core"
 import type { AdapterAccount } from '@auth/core/adapters'
 import { sql } from "drizzle-orm"
@@ -74,7 +74,7 @@ export const room = pgTable("room", {
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
-  language: text("language").notNull(),
+  tags: text("tags").array().notNull(),
   githubRepo: text("githubRepo"),
 })
 

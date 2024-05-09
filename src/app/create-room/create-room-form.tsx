@@ -2,52 +2,63 @@
 
 import { Button } from "@/components/ui/button";
 import {
-    Form,
     FormControl,
     FormDescription,
     FormField,
     FormItem,
     FormLabel,
-    FormMessage,
+    FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useRouter } from 'next/navigation';
+import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { createRoomAction } from "./actions";
-import { useRouter } from 'next/navigation'
-
 
 const formSchema = z.object({
     name: z.string().min(2).max(50),
     description: z.string().min(2).max(250),
     githubRepo: z.string().min(2).max(50),
-    language: z.string().min(2).max(50),
-})
+    tags: z.array(z.object({
+        value: z.string().min(2).max(50)
+    })),
+});
 
-
+type FormValues = z.infer<typeof formSchema>;
 
 export function CreateRoomForm() {
     const router = useRouter();
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
             description: "",
             githubRepo: "",
-            language: "",
+            tags: [],
         },
-    })
+    });
+
+    const { fields, append } = useFieldArray<FormValues, "tags", "id">({
+        control: form.control,
+        name: "tags",
+    });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         //TODO: invoke a server action to store the data in our databse
-        await createRoomAction(values)
+
+        const transformedValues = {
+            ...values,
+            // Transform tags from an array of objects to an array of strings
+            tags: values.tags.map(tag => tag.value)
+        };
+        await createRoomAction(transformedValues)
         router.push("/");
     }
 
     return (
-        <Form {...form}>
+        <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
@@ -97,25 +108,26 @@ export function CreateRoomForm() {
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name="language"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Primary Programming Langugage</FormLabel>
-                            <FormControl>
-                                <Input {...field} />
-                            </FormControl>
+                {fields.map((field, index) => (
+                    <FormItem key={field.id}>
+                        <FormLabel>Tag {index + 1}</FormLabel>
+                        <FormControl>
+                            <Input {...form.register(`tags.${index}.value` as const)} />
+                        </FormControl>
+                        {index === 0 &&
                             <FormDescription>
-                                List the primary programming language you are working with
+                                Add a tag that describes the technologies you are working on
                             </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <Button type="submit">Submit</Button>
+                        }
+                    </FormItem>
+                ))}
+                <div className="flex space-x-4">
+                    <Button type="button" onClick={() => append({ value: '' })}>
+                        Add Tag
+                    </Button>
+                    <Button type="submit">Submit</Button>
+                </div>
             </form>
-        </Form>
+        </FormProvider >
     )
 }
