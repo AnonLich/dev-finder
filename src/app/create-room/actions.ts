@@ -3,6 +3,7 @@
 import { getSession } from "@/auth";
 import { db } from "@/db";
 import { Room, room } from "@/db/schema";
+import { createRoom } from "@/services/rooms";
 import { revalidatePath } from "next/cache";
 
 export async function createRoomAction(roomData: Omit<Room, "id" | "userId">) {
@@ -12,7 +13,7 @@ export async function createRoomAction(roomData: Omit<Room, "id" | "userId">) {
         throw new Error("you must be logged in to create room")
     }
 
-    await db.insert(room).values({ ...roomData, userId: session?.user.id });
+    await createRoom(roomData, session.user.id);
 
     revalidatePath("/")
 }

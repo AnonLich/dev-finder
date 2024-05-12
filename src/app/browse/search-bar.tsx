@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScanSearchIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -20,6 +21,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function SearchBar() {
     const router = useRouter();
     const query = useSearchParams();
+    const search = query.get("search");
 
     async function onSubmit(values: FormValues) {
         if (values.search) {
@@ -32,9 +34,13 @@ export function SearchBar() {
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            search: query.get("search") ?? "",
+            search: search ?? "",
         },
     });
+
+    useEffect(() => {
+        form.setValue("search", search ?? "");
+    }, [search, form])
 
     return (
         <FormProvider {...form}>

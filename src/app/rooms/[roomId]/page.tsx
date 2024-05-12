@@ -3,9 +3,12 @@ import { getRoom } from "@/services/rooms";
 import { GithubIcon } from "lucide-react";
 import Link from "next/link";
 import { DevFinderVideo } from "./video-player";
+import { unstable_noStore } from "next/cache";
 
 
 export default async function RoomPage(props: { params: { roomId: string } }) {
+    unstable_noStore();
+
     const roomId = props.params.roomId;
 
     const room = await getRoom(roomId);
